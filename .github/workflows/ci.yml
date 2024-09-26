@@ -11,8 +11,9 @@ on:
 jobs:
   flutter_test:
     name: Run Flutter test and analyse
-    runs-on: ubuntu-latest
+    runs-on: alpine-latest
     steps:
+      - uses: actions/checkout@v2
       - uses: subosito/flutter-action@v1
         with:
           channel: "stable"
