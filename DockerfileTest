@@ -1,0 +1,13 @@
+FROM alpine:latest
+
+RUN apk update
+
+RUN apk add --no-cache make
+
+RUN apk add bash curl file git unzip which zip gcompat
+
+RUN git clone --depth 1 --branch 3.13.3 https://github.com/flutter/flutter.git /usr/local/flutter
+
+ENV PATH="/usr/local/flutter/bin:/usr/local/flutter/bin/cache/dart-sdk/bin:${PATH}"
+
+RUN flutter doctor

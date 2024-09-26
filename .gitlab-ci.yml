@@ -1,0 +1,61 @@
+stages:
+  - Test
+  - Build
+
+.build_test_stage_image:
+  image: guilhermeramos2003/test-stage-docker:v1.0
+
+.build_build_android_stage_image:
+  image: guilhermeramos2003/build-android-stage-docker:v2.0
+
+Check Code Format:
+  extends: .build_test_stage_image
+  stage: Test
+  script:
+    # - dart format -l 100 --set-exit-if-changed  `find . -name "*.dart" ! -name "*.g.dart" ! -iname "*.freezed.dart" ! -path "./lib/di/**" ! -path "./lib/generated/**" ! -path "./.dart_tool/**" | tr '\n' ' '`
+    - echo "Someday...."
+
+Flutter Analyze:
+  extends: .build_test_stage_image
+  stage: Test
+  script:
+    # - flutter analyze
+    - echo "Someday...."
+
+Dart Code Metrics:
+  extends: .build_test_stage_image
+  stage: Test
+  script:
+    - echo "Someday...."
+# # ------------------------------------------------------------------
+# #
+# # Ci pipelines
+# #
+# # ------------------------------------------------------------------
+
+.setup_secrets:
+  extends: .build_build_android_stage_image
+  variables:
+    SECURE_FILES_DOWNLOAD_PATH: "./private_keys"
+  before_script:
+    - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | bash
+    - echo "SECURE_FILES_DOWNLOAD_PATH = $SECURE_FILES_DOWNLOAD_PATH"
+    - ls $SECURE_FILES_DOWNLOAD_PATH
+    - ls ./private_keys/
+    - unzip ./private_keys/secrets.zip
+    - ls .secrets
+    - cp .secrets/certificates/ios/* ./private_keys/
+    - cp .secrets/certificates/Android/* ./private_keys/
+    - export GOOGLE_APPLICATION_CREDENTIALS="`pwd`/.secrets/certificates/${GOOGLE_KEY_FILE}"
+    - echo "GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS"
+
+Build Android QA:
+  extends: .setup_secrets
+  stage: Build
+  script:
+    - make setup flavor=qa
+    - flutter build apk
+  artifacts:
+    paths:
+      - build/app/outputs/flutter-apk/app-qa-release.apk
+    expire_in: 5 day
